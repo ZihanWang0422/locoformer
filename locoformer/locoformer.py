@@ -1012,6 +1012,11 @@ class MemoryMLP(Module):
 
         loss_weight = self.to_loss_weight(tokens)
 
+        # employ lookahead, from https://arxiv.org/abs/2601.00671
+
+        keys, loss_weight = keys[..., :-1, :], loss_weight[..., :-1, :]
+        values = values[:, 1:]
+
         grad = self.grad_fn(memories, (keys, values, loss_weight))
 
         # prepare forget
@@ -2064,7 +2069,7 @@ class Locoformer(Module):
 
         all_cum_rewards = torch.zeros(num_envs, device = self.device)
 
-        with replay.batched_episode(num_envs):
+        with replay.batched_episode(num_envs, latent_gene_id = latent_gene_id):
 
             past_action = None
 
@@ -2144,7 +2149,6 @@ class Locoformer(Module):
                     done = torch.zeros(num_envs, device = self.device, dtype = torch.bool),
                     condition = maybe_command,
                     cond_mask = torch.full((num_envs,), exists(maybe_command), device = self.device, dtype = torch.bool),
-                    latent_gene_id = latent_gene_id,
                     **sampled_env_params
                 )))
 
@@ -2171,7 +2175,6 @@ class Locoformer(Module):
                         done = torch.ones(num_envs, device = self.device, dtype = torch.bool),
                         condition = maybe_command,
                         cond_mask = torch.full((num_envs,), exists(maybe_command), device = self.device, dtype = torch.bool),
-                        latent_gene_id = latent_gene_id,
                         **sampled_env_params
                     )))
 

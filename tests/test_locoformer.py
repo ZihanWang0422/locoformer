@@ -480,7 +480,6 @@ def test_epo():
             value = 'float',
             done = 'bool',
             cond_mask = 'bool',
-            latent_gene_id = 'int'
         ),
         meta_fields = dict(
             latent_gene_id = 'int',
